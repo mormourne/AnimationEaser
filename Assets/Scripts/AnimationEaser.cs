@@ -9,7 +9,7 @@ public class AnimationEaser : MonoBehaviour
 
     public AnimationClip originalClip;
     public EasingWorkflow easingWorkflow = EasingWorkflow.Normalized;
-    public AnimationCurve animationEasingTimeDependent = AnimationCurve.Linear(0f,0f,1f,1f);
+    public AnimationCurve animationEasingTimeDependent = AnimationCurve.Linear(0f, 0f, 1f, 1f);
     public AnimationCurve animationEasingNormalized = AnimationCurve.Linear(0f, 0f, 1f, 1f);
     public float durationModifier = 1f;
     public string clipPath = "Assets/AnimationEaser/EasedAnimations/";
@@ -22,29 +22,36 @@ public class AnimationEaser : MonoBehaviour
     public void EaseAnimation()
     {
         #region Copying clip and checking values
+
+        if (originalClip == null)
+        {
+            Debug.LogError("Original clip must be set");
+            return;
+        }
+
         if (clipPath == null || clipPath.Length < 1 || clipName == null || clipName.Length < 1)
         {
-            Debug.Log("Both clip path and name must be non-empty");
+            Debug.LogError("Both clip path and name must be non-empty");
             return;
         }
 
         string copyPath = clipPath + clipName + ".anim";
         if (!AssetDatabase.CopyAsset(AssetDatabase.GetAssetPath(originalClip), copyPath))
         {
-            Debug.Log("Unable to copy the original clip");
+            Debug.LogError("Unable to copy the original clip. Make sure the specified folder already exists.");
             return;
         }
 
         AnimationClip animationClip = AssetDatabase.LoadAssetAtPath<AnimationClip>(copyPath);
         if (animationClip == null)
         {
-            Debug.Log("Error loading the copy of the clip");
+            Debug.LogError("Error loading the copy of the clip");
             return;
         }
 
         if (sampleDeltaTime <= 0f)
         {
-            Debug.Log("Sample delta time must be strictly positive");
+            Debug.LogError("Sample delta time must be strictly positive");
             return;
         }
 
@@ -52,12 +59,12 @@ public class AnimationEaser : MonoBehaviour
         {
             if (durationModifier <= 0f)
             {
-                Debug.Log("Duration modifier must be strictly positive");
+                Debug.LogError("Duration modifier must be strictly positive");
                 return;
             }
             if (animationEasingNormalized == null || animationEasingNormalized.length < 1)
             {
-                Debug.Log("Curve must contain at least one key");
+                Debug.LogError("Curve must contain at least one key");
                 return;
             }
         }
@@ -65,7 +72,7 @@ public class AnimationEaser : MonoBehaviour
         {
             if (animationEasingTimeDependent == null || animationEasingTimeDependent.length < 1)
             {
-                Debug.Log("Curve must contain at least one key");
+                Debug.LogError("Curve must contain at least one key");
                 return;
             }
         }
@@ -92,19 +99,12 @@ public class AnimationEaser : MonoBehaviour
                 float evalParameter = easingWorkflow == EasingWorkflow.Normalized ?
                     animationEasingNormalized.Evaluate(newCurveTimeStamp / newDuration) * oldDuration : animationEasingTimeDependent.Evaluate(newCurveTimeStamp);
                 newCurve.AddKey(newCurveTimeStamp, originalCurve.Evaluate(evalParameter));
-                if (i == 0)
-                {
-                    Debug.Log("newCurveTimeStamp " + newCurveTimeStamp + " oldCurveTimeStamp " + oldCurveTimeStamp + " evalParameter " + evalParameter);
-                }
+
             }
             newCurve.AddKey(newDuration, originalCurve.Evaluate(oldDuration));
-            if (i == 0)
-            {
-                Debug.Log("newDuration" + newDuration + " oldDuration " + oldDuration);
-            }
 
             animationClip.SetCurve(binding.path, binding.type, binding.propertyName, newCurve);
-            //Debug.Log(i + " - " + binding.path + "/" + binding.propertyName + ", Keys: " + originalCurve.keys[originalCurve.keys.Length - 1].time);
+
         }
 
         animationClip.EnsureQuaternionContinuity();

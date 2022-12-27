@@ -1,4 +1,12 @@
 # AnimationEaser
+
+This tool allows you to change pace and/or duration of an animation. Can be used to stylize an animation e.g. to make it more toony.
+
+
+
+https://user-images.githubusercontent.com/56534400/209669911-07dd19c9-54f9-4eb4-9a62-0a19f4fe0f75.mp4
+
+
 # Documentation
 
 ## Installation
